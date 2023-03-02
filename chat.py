@@ -1,64 +1,98 @@
 # ----------------------------------------------------------------------
 # Name:      chat
 # Purpose:   implement a simple chatbot
-# Author(s): Nick Tang, Yuto
+# Author(s): Nick Tang, Yuto Yoshimori
 # ----------------------------------------------------------------------
 """
-Enter your docstring with a one-line overview here
+This program is a chatbot that chats with a user.
 
-and a more detailed description here.
+takes in a user's name and repeatedly gives replies based on user input.
+This chatbot follows 12 rules, listed in the chat_with() function below.
 """
 import random
 import string
 
-# Enter your constant assignments below
+# Constants
 pronoun_to_replacement = {
     'i': 'you',
-    'me': 'you',
-    'your': 'my',
+    'am': 'are',
     'my': 'your',
+    'your': 'my',
+    'me': 'you',
     'you': 'me'
 }
-topics = ['family', 'friend', 'friends', 'mom', 'dad',
-                  'brother', 'sister', 'girlfriend', 'boyfriend',
-                  'children', 'son', 'daughter', 'child', 'wife',
-                  'husband', 'home', 'cat', 'pet']
-answer_5 = []
-answer_6 = []
+topics = {'family', 'friend', 'friends', 'mom', 'dad', 'brother', 'sister',
+          'girlfriend', 'boyfriend', 'children', 'son', 'daughter',
+          'child', 'wife', 'husband', 'home', 'cat', 'pet'}
+answer_5 = [', why do you ask?', ', how would an answer to that help you?']
+answer_6 = ['What do you think', 'Why is that important']
 answer_10 = ['I have no clue.', 'Maybe.']
 answer_12 = ["That's interesting.", "That's nice!", "Can you elaborate on "
                                                     "that?"]
 
 
+# Helper functions
 def change_person(*args):
     """
-    This function changes the subject noun for a sentence that is split
-    up by word.
+    This function takes an input of a sentence in the form of a list of
+    words, changes/reverses the person of the sentence, then returns
+    that sentence as a string.
 
-    :param args: string
-    :return: string
+    :param args: (string) one or more strings that form a sentence
+    :return: (string) a sentence where the person are reversed
     """
-    print()
-    return ''
+    changed_sentence = [pronoun_to_replacement[word] if word in
+                        pronoun_to_replacement else word
+                        for word in strip_list_punc(*args)]
+    # print(changed_sentence)
+    return ' '.join(changed_sentence)
 
 
-def special(list1, list2):
+def special(word_list):
     """
-    This function finds the intersection between two lists and returns
-    that intersection as a list.
+    This function determines intersection between word_list and
+    special_topics. If there are multiple items within the
+    intersection, one random item out of the intersection will be
+    returned.
 
-    :param list1: list
-    :param list2: list
-    :return: list
+    :param word_list: (list) words that make up a sentence
+    :returns: (string/None) word that intersects word_list and topics,
+                or None if no intersection
     """
-    list(set(list1) & set(list2))
+    inter = set(strip_list_punc(word_list)) & topics
+    if len(inter) > 0:
+        # print('Is special')
+        return random.choice(list(inter))
+    # print('Not special')
+    return None
 
 
 def strip_list_punc(word_list):
+    """
+    This function takes a list of strings and strips them of their
+    punctuation.
+
+    :param word_list: (list) words that make up a sentence
+    :return: (list) word_list with words stripped of punctuation
+    """
     return [word.strip(string.punctuation) for word in word_list]
 
 
+def is_question(word_list):
+    """
+    This function takes a list of strings and returns the end
+    punctuation symbol.
 
+    :param word_list: (list) words that make up a sentence
+    :return: (string) end punctuation symbol if exists
+    """
+    if (word_list[-1][-1]) == '?':
+        # print('Is question')
+        return True
+    return False
+
+
+# Core function
 def chat_with(name):
     """
     This function prompts the user to enter a message, and
@@ -69,45 +103,54 @@ def chat_with(name):
     """
     request = input('Talk to me please > ')
     lowered_request = request.lower().split()
-    print(len(set(lowered_request) & set(topics)))
+
     match lowered_request:
-        # 1: bye(.) => (exit case)
+        # Rule 1: bye(.) => (exit case)
         case ['bye' | 'bye.']:
             print(f"Bye {name}.\nHave a great day!")
             return True
-        # 2: special topic
-        case lowered_request if intersect(lowered_request, topics)) \
-            > 0:
-            print(f'Tell me more about '
-                  f'{random.choice(intersect(lowered_request, topics))}.')
 
-        # 3: (do/can/will) you ___ ?
-        case [('do' | 'can' | 'will') as verb, 'you', *rest]:
-            print(f'No {name}, I {verb} not {change_person(rest)}')
-        # 4: why ___ ?
-        case ['why', *rest]:
+        # Rule 2: special topic
+        case lowered_request if res := special(lowered_request):
+            print(f'Tell me more about your {res}.')
+
+        # Rule 3: (do/can/will) you ___ ?
+        case [('do' | 'can' | 'will') as verb, 'you', *rest] if \
+             is_question(rest):
+            print(f'No {name}, I {verb} not {change_person(rest)}.')
+
+        # Rule 4: why ___ ?
+        case ['why', *rest] if is_question(rest):
             print('Why not?')
-        # 5: how ___ ?
-        case ['how', *rest]:
-            print('f')
-        # 6: what ___ ?
-        case ['what', *rest]:
-            print()
-        # 7: i (need/think/have/want)
+
+        # Rule 5: how ___ ?
+        case ['how', *rest] if is_question(rest):
+            print(f'{name}{random.choice(answer_5)}')
+
+        # Rule 6: what ___ ?
+        case ['what', *rest] if is_question(rest):
+            print(f'{random.choice(answer_6)} {name}?')
+
+        # Rule 7: i (need/think/have/want)
         case ['i', ('need' | 'think' | 'have' | 'want') as verb, *rest]:
-            print(f'Why do you {verb} {change_person(rest)}')
-        # 8: i ___ (last word is not too)
-        case ['i', *middle] if middle[-1] != 'too':
-            print(f'I {middle} too.')
-        # 9: (verb list word) ___
+            print(f'Why do you {verb} {change_person(rest)}?')
+
+        # Rule 8: i ___ (last word is not too)
+        case ['i', *end] if end[-1] != 'too':
+            print(f'I {" ".join(end)} too.')
+
+        # Rule 9: (verb list word) ___
         case [('tell' | 'give' | 'say') as verb, *rest]:
-            print(f'You {verb} {rest.join(" ")}.')
-        # 10: ___ ?
-        case [*sentence, last] if last[-1] == '?':
+            print(f'You {verb} {" ".join(strip_list_punc(rest))}.')
+
+        # Rule 10: ___ ?
+        case lowered_request if end_punc(lowered_request) == '?':
             print(random.choice(answer_10))
-        # 11: input contains because
-        case [lowered_request] if 'because' in lowered_request:
+
+        # Rule 11: input contains because
+        case lowered_request if 'because' in lowered_request:
             print('Is that the real reason?')
+
         # 12: everything else
         case _:
             print(random.choice(answer_12))
