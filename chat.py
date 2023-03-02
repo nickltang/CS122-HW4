@@ -155,8 +155,6 @@ def chat_with(name):
 
 
 def main():
-    # Enter your code following the outline below and take out the
-    # pass statement.
     # 1.Prompt the user for their name
     username = input("Hello. What is your name please? ")
 
