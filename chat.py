@@ -42,9 +42,8 @@ def change_person(*args):
     :return: (string) a sentence where the person are reversed
     """
     changed_sentence = [pronoun_to_replacement[word] if word in
-                        pronoun_to_replacement else word
+                                                        pronoun_to_replacement else word
                         for word in strip_list_punc(*args)]
-    # print(changed_sentence)
     return ' '.join(changed_sentence)
 
 
@@ -61,9 +60,7 @@ def special(word_list):
     """
     inter = set(strip_list_punc(word_list)) & topics
     if len(inter) > 0:
-        # print('Is special')
         return random.choice(list(inter))
-    # print('Not special')
     return None
 
 
@@ -87,7 +84,6 @@ def is_question(word_list):
     :return: (string) end punctuation symbol if exists
     """
     if (word_list[-1][-1]) == '?':
-        # print('Is question')
         return True
     return False
 
@@ -144,7 +140,7 @@ def chat_with(name):
             print(f'You {verb} {" ".join(strip_list_punc(rest))}.')
 
         # Rule 10: ___ ?
-        case lowered_request if end_punc(lowered_request) == '?':
+        case lowered_request if is_question(lowered_request):
             print(random.choice(answer_10))
 
         # Rule 11: input contains because
